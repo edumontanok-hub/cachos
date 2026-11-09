@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#030915">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cachos">
+  <meta name="description" content="Cachos: registra tus dados y los de tres rivales en una sola pantalla.">
+  <meta name="color-scheme" content="dark">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="./icons/icon-192.png">
+  <title>Cachos</title>
+  <style>
+    :root{color-scheme:dark;--text:#f4fbff;--cyan:#1bd4ff;--dark:#030915;--line:#207ca2;--muted:#b8d0e1}
+    *,*::before,*::after{box-sizing:border-box}
+    html{background:var(--dark);-webkit-text-size-adjust:100%}
+    body{margin:0;min-height:100dvh;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:radial-gradient(ellipse 140% 95% at 50% 40%,#092140 0%,#041123 45%,#01050e 95%);-webkit-user-select:none;user-select:none}
+    button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+    button:focus-visible{outline:3px solid #d6fbff;outline-offset:2px}
+    button:disabled{opacity:.3;cursor:not-allowed}
+    .app{width:min(100%,650px);margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 10px) max(9px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 15px) max(9px,env(safe-area-inset-left,0px))}
+    .header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 9px}
+    .brand{font-size:clamp(23px,6vw,37px);font-weight:900;letter-spacing:-.8px;line-height:1;text-shadow:0 2px 3px #fff3,0 0 12px #2783be33}
+    .brand-dice{font-size:.85em;margin-right:5px;vertical-align:2px}
+    .reset-btn{border:1.4px solid #6785a1;border-radius:12px;background:linear-gradient(#1f3247,#081525);padding:8px 12px;font-size:13px;font-weight:750;min-height:37px;white-space:nowrap;box-shadow:inset 0 2px 6px #c2e7ff1b}
+    .seatbar{display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;margin:0 0 12px}
+    .seat-label{font-size:clamp(12px,3.1vw,16px);font-weight:750;white-space:nowrap;color:#dceaf4}
+    .seat-btn{min-height:38px;flex:1;max-width:175px;min-width:0;border-radius:11px;padding:6px 5px;border:1.5px solid #718da5;background:linear-gradient(#1e314a,#041123);font-size:clamp(12px,3.2vw,16px);font-weight:780}
+    .seat-btn[aria-pressed="true"]{background:linear-gradient(#0c83ce,#073775 50%,#02182e);border-color:#25ceff;box-shadow:0 0 13px #00b7ff66,inset 0 2px 7px #a2edff40}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+    .player{min-width:0;min-height:0;border:1.7px solid #1c86b7;background:linear-gradient(148deg,#081f39 0%,#020b18 75%);border-radius:20px;box-shadow:inset 0 0 16px #0d3a5c80,0 0 10px #004d7d30;padding:10px 9px 11px;text-align:center;display:flex;flex-direction:column;align-items:stretch}
+    .player.mine{border-color:var(--cyan);box-shadow:0 0 13px #05b6ff5c,inset 0 0 20px #005aa045}
+    .player-name{font-weight:850;line-height:1.2;font-size:clamp(14px,3.9vw,21px);padding:4px 5px 5px;background:linear-gradient(180deg,#0666b6,#012a5b 65%,#07172c);border:1.4px solid #118cf2;box-shadow:0 0 7px #168be73a,inset 0 1px 5px #5abeff4c;border-radius:99px;white-space:nowrap;align-self:center;width:90%;margin:0 0 10px}
+    .mine .player-name{border-color:#1ae2ff}
+    .dice-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;justify-items:center;margin:0 0 9px}
+    .die-button{display:grid;place-items:center;padding:1px;border:1px solid transparent;border-radius:12px;background:none;width:100%;height:clamp(41px,13vw,69px);min-width:0}
+    .die-button svg{display:block;width:min(100%,62px);height:100%;filter:drop-shadow(0 2px 2px #0008)}
+    .die-button:active{background:#08568a;transform:scale(.96)}
+    .die-button:disabled{opacity:.28}
+    .slots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin:0 0 9px}
+    .slot{min-width:0;min-height:clamp(27px,8.3vw,42px);height:clamp(27px,8.3vw,42px);border:1.4px solid #b7c8d6;border-radius:7px;background:linear-gradient(#172a3c,#03101d);padding:2px;display:grid;place-items:center}
+    .slot svg{width:100%;height:100%;display:block}
+    .slot.filled{border-color:#23b9e9;background:linear-gradient(#15446a,#05152b);box-shadow:0 0 7px #00b3ff45}
+    .slot.empty{border-color:#8ba1b2}
+    .count{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:10px}
+    .count-arrow{width:clamp(35px,10vw,48px);height:clamp(34px,9vw,45px);border:1.4px solid #8ea2b4;border-radius:11px;background:linear-gradient(160deg,#26374a,#040c17);box-shadow:inset 0 1px 6px #c7e8ff3a;font-size:clamp(17px,5vw,25px);font-weight:850;display:grid;place-items:center}
+    .count-arrow:active{background:linear-gradient(#1377b5,#032448)}
+    .count-value{font-weight:850;font-size:clamp(26px,7.9vw,42px);line-height:1;font-variant-numeric:tabular-nums;min-width:1.1em}
+    .total{display:flex;align-items:center;justify-content:center;gap:16px;border:1.8px solid var(--cyan);border-radius:19px;margin:14px 10px 0;padding:10px 14px;background:linear-gradient(170deg,#0a4474 0%,#061a39 45%,#030b1d 100%);box-shadow:0 0 12px #12c1ff43,inset 0 3px 7px #42bdff2b}
+    .total-label{font-size:clamp(20px,5.7vw,30px);font-weight:840}
+    .total-divider{width:1px;height:36px;background:#e8f7ff96}
+    .total-value{font-size:clamp(32px,9.6vw,52px);font-weight:900;color:#ecfbff;text-shadow:0 0 14px #108bff8a;line-height:1;font-variant-numeric:tabular-nums}
+    .sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .dialog-shade{position:fixed;inset:0;display:grid;place-items:center;background:#000c;padding:18px;z-index:20}
+    .dialog-shade[hidden]{display:none}
+    .dialog{max-width:340px;width:100%;border:1.5px solid var(--cyan);border-radius:18px;background:#071d35;padding:18px;box-shadow:0 12px 45px #000d}
+    .dialog h2{margin:0 0 8px;font-size:19px}.dialog p{font-size:14px;line-height:1.5;color:#c7dcec;margin:0}
+    .dialog-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:20px}
+    .dialog-actions button{padding:10px 13px;border-radius:9px;border:1px solid #559cb9;background:#163a5b;font-weight:750;min-height:42px}
+    .dialog-actions .primary{border-color:#22d5ff;background:#0569b7}
+    @media(max-width:365px){
+      .app{padding-left:6px;padding-right:6px;padding-top:5px}
+      .header{margin-bottom:7px}.seatbar{margin-bottom:9px;gap:4px}
+      .grid{gap:6px}.player{padding:8px 6px 9px;border-radius:15px}
+      .player-name{margin-bottom:7px}.dice-grid{gap:3px;margin-bottom:6px}
+      .die-button{height:43px}.slots{gap:2px;margin-bottom:7px}
+      .count{gap:6px}.count-arrow{height:34px;width:35px}
+      .total{margin:9px 5px 0;padding:8px}
+    }
+    @media(min-width:540px){.app{padding:25px 19px}.player{padding:20px}.player-name{margin-bottom:16px}.dice-grid{margin-bottom:16px}.slots{margin-bottom:15px}}
+    @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  </style>
+</head>
+<body>
+<main id="cachos" class="app">
+  <header class="header">
+    <div class="brand"><span class="brand-dice" aria-hidden="true">🎲</span>Cachos</div>
+    <button id="clear" class="reset-btn" type="button">↻ Limpiar</button>
+  </header>
+  <nav class="seatbar" aria-label="Posición de mi asiento">
+    <span class="seat-label">Mi asiento</span>
+    <button class="seat-btn" type="button" data-seat="left" aria-pressed="true">Izquierda</button>
+    <button class="seat-btn" type="button" data-seat="right" aria-pressed="false">Derecha</button>
+  </nav>
+  <div id="players" class="grid" aria-label="Cuatro asientos, dos arriba y dos abajo"></div>
+  <div class="total" role="status" aria-live="polite"><span class="total-label">🎲 Totales</span><span class="total-divider" aria-hidden="true"></span><span id="total" class="total-value">20</span></div>
+  <div id="announcer" role="status" aria-live="polite" class="sr-only"></div>
+</main>
+<div class="dialog-shade" id="dialog" hidden role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+  <div class="dialog">
+    <h2 id="dialog-title">¿Limpiar los registros?</h2>
+    <p>Se borrarán las casillas de los cuatro jugadores. Las cantidades de dados se conservarán.</p>
+    <div class="dialog-actions">
+      <button id="cancel" type="button">Cancelar</button>
+      <button id="confirm" class="primary" type="button">Limpiar</button>
+    </div>
+  </div>
+</div>
+<script>
+(() => {
+  'use strict';
+  const STORE_KEY = 'cachos-registros-v2';
+  const MAX_DICE=5;
+  const PIPS={
+    1:[[50,50]],
+    2:[[25,75],[75,25]],
+    3:[[25,75],[50,50],[75,25]],
+    4:[[25,25],[75,25],[25,75],[75,75]],
+    5:[[25,25],[75,25],[50,50],[25,75],[75,75]],
+    6:[[25,21],[75,21],[25,50],[75,50],[25,79],[75,79]]
+  };
+  const names={1:'',2:'',3:'',4:''};
+  function fresh(){return {seat:'left',rolls:{1:[],2:[],3:[],4:[]},counts:{1:5,2:5,3:5,4:5}}}
+  function load(){
+    const state=fresh();
+    try{
+      const stored=JSON.parse(localStorage.getItem(STORE_KEY));
+      if(!stored || typeof stored!=='object')return state;
+      if(stored.seat==='left'||stored.seat==='right')state.seat=stored.seat;
+      for(let id=1;id<=4;id++){
+        const list=stored.rolls?.[id];
+        if(Array.isArray(list))state.rolls[id]=list.filter(n=>Number.isInteger(n)&&n>=1&&n<=6).slice(0,MAX_DICE);
+        if(Number.isInteger(stored.counts?.[id]))state.counts[id]=Math.min(5,Math.max(0,stored.counts[id]));
+      }
+    }catch(err){}
+    return state;
+  }
+  let state=load();
+  const root=document.getElementById('players');
+  const total=document.getElementById('total');
+  const announcer=document.getElementById('announcer');
+  const dialog=document.getElementById('dialog');
+  let focusRestore=null;
+  function persist(){try{localStorage.setItem(STORE_KEY,JSON.stringify(state))}catch(err){}}
+  function announce(message){announcer.textContent=message;}
+  function ownId(){return state.seat==='left'?1:2;}
+  function createBtn(css,description,onClick,disabled=false){
+    const b=document.createElement('button');b.type='button';b.className=css;b.setAttribute('aria-label',description);b.disabled=disabled;
+    if(onClick)b.addEventListener('click',onClick);
+    return b;
+  }
+  function diceSVG(value,compact=false){
+    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 100 100');svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');
+    const shadow=document.createElementNS('http://www.w3.org/2000/svg','rect');
+    shadow.setAttribute('x','5');shadow.setAttribute('y','5');shadow.setAttribute('width','90');shadow.setAttribute('height','90');shadow.setAttribute('rx','16');shadow.setAttribute('fill','#f8fafd');shadow.setAttribute('stroke','#ced5e1');shadow.setAttribute('stroke-width','2');
+    svg.append(shadow);
+    for(const [cx,cy] of PIPS[value]){
+      const pip=document.createElementNS('http://www.w3.org/2000/svg','circle');pip.setAttribute('cx',String(cx));pip.setAttribute('cy',String(cy));pip.setAttribute('r',compact?'8':'8.8');pip.setAttribute('fill','#07101d');svg.append(pip);
+    }
+    return svg;
+  }
+  function render(){
+    document.querySelectorAll('[data-seat]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.seat===state.seat)));
+    const me=ownId();
+    const positions=[
+      {id:3,label:'Rival 1'},
+      {id:4,label:'Rival 2'},
+      {id:1,label:me===1?'Yo':'Rival 3'},
+      {id:2,label:me===2?'Yo':'Rival 3'}
+    ];
+    root.replaceChildren();
+    for(const {id,label} of positions){
+      const mine=(id===me);
+      const card=document.createElement('section');card.className='player'+(mine?' mine':'');card.setAttribute('aria-label',label);
+      const title=document.createElement('div');title.className='player-name';title.textContent=label;card.append(title);
+      const diceGrid=document.createElement('div');diceGrid.className='dice-grid';
+      for(let i=1;i<=6;i++){
+        const dice=createBtn('die-button',`${label}: registrar cara ${i}`,()=>add(id,i),state.rolls[id].length>=MAX_DICE);
+        dice.append(diceSVG(i));diceGrid.append(dice);
+      }
+      card.append(diceGrid);
+      const slots=document.createElement('div');slots.className='slots';slots.setAttribute('aria-label',`Registro de ${label}`);
+      for(let i=0;i<5;i++){
+        const val=state.rolls[id][i];
+        const slot=createBtn('slot '+(val?'filled':'empty'),val?`${label}: eliminar dado ${val} en casilla ${i+1}`:`${label}: casilla ${i+1} vacía`,val?()=>remove(id,i):null,!val);
+        if(val)slot.append(diceSVG(val,true));
+        slots.append(slot);
+      }
+      card.append(slots);
+      const controls=document.createElement('div');controls.className='count';controls.setAttribute('aria-label',`Cantidad de dados de ${label}`);
+      const down=createBtn('count-arrow',`${label}: disminuir dados`,()=>changeCount(id,-1),state.counts[id]===0);down.textContent='▼';
+      const number=document.createElement('output');number.className='count-value';number.textContent=String(state.counts[id]);
+      const up=createBtn('count-arrow',`${label}: aumentar dados`,()=>changeCount(id,1),state.counts[id]===5);up.textContent='▲';
+      controls.append(down,number,up);card.append(controls);
+      root.append(card);
+    }
+    total.textContent=String(Object.values(state.counts).reduce((sum,n)=>sum+n,0));
+  }
+  function add(id,face){
+    if(state.rolls[id].length>=5)return;
+    state.rolls[id].push(face);persist();render();announce(`Registrado dado ${face}`);
+  }
+  function remove(id,position){
+    if(position<0 || position>=state.rolls[id].length)return;
+    state.rolls[id].splice(position,1);persist();render();announce('Dado eliminado');
+  }
+  function changeCount(id,delta){
+    state.counts[id]=Math.max(0,Math.min(5,state.counts[id]+delta));persist();render();announce(`Cantidad de dados: ${state.counts[id]}. Totales: ${total.textContent}`);
+  }
+  document.querySelectorAll('[data-seat]').forEach(b=>b.addEventListener('click',()=>{
+    if(state.seat===b.dataset.seat)return;
+    state.seat=b.dataset.seat;persist();render();announce('Asiento cambiado');
+  }));
+  const clear=document.getElementById('clear');
+  clear.addEventListener('click',()=>{
+    if(!Object.values(state.rolls).some(list=>list.length)){announce('No hay registros para limpiar');return;}
+    dialog.hidden=false;document.getElementById('cancel').focus();
+  });
+  function closeDialog(){dialog.hidden=true;clear.focus();}
+  document.getElementById('cancel').addEventListener('click',closeDialog);
+  document.getElementById('confirm').addEventListener('click',()=>{
+    for(let id=1;id<=4;id++)state.rolls[id]=[];
+    persist();render();closeDialog();announce('Registros borrados');
+  });
+  dialog.addEventListener('click',e=>{if(e.target===dialog)closeDialog();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!dialog.hidden)closeDialog();});
+  render();
+  if('serviceWorker' in navigator&&location.protocol.startsWith('http')){
+    window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(()=>{}));
+  }
+})();
+</script>
+</body>
+</html>
